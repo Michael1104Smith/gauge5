@@ -1,0 +1,391 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html ng-app="sliderDemoApp">
+  	<head>
+    	<meta http-equiv="content-type" content="text/html;charset=utf-8">
+    	<title>Gauge5</title>
+
+		<link rel="stylesheet" href="css/jquery-ui.css">
+	    <link rel="stylesheet" href="css/slider.css">
+	    <link rel="stylesheet" href="css/style.css">
+		<script type="text/javascript">
+		  var ValueFontSize = 32, MaxValueFontSize = 16, LabelFontSize = 32;
+	      var cur_value = 13.87, inside_text = "Sales 2015",max_value = 20,min_value = 0;
+	      var backColor = "#e6e6e6",foreColor = "#a0d771";
+	      var prefix = "$",postfix = "K";
+		</script>
+		<script type="text/javascript" src="js/d3.v2.js"></script>
+		<script type="text/javascript" src="js/gauge_border.js"></script>
+		
+	    <script src="js/jquery-1.10.2.js"></script>
+	    <script src="js/angular.min.js"></script>
+	    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+	    <script type="text/javascript" src="js/slider.js"></script>  
+	    <script type="text/javascript" src="js/jquery.textchange.min.js"></script>  
+
+	    <script type="text/javascript">
+	    	$(document).ready(function(){
+	       		$('#inside_text').val(inside_text);
+	       		$('#prefix').val(prefix);
+	       		$('#postfix').val(postfix);
+	    		drawChart();
+		        $('.font_type').on("change",function(){
+		            var font_family = $(this).val();
+		            $('body').css('font-family',font_family);
+		            $('tspan').css('font-family',font_family);
+		        });
+		        $('#inside_text').bind('textchange',function(event,previousText){
+		            inside_text = $(this).val();
+		            drawChart();
+		        });
+		        $('#prefix').bind('textchange',function(event,previousText){
+		            prefix = $(this).val();
+		            drawChart();
+		        });
+		        $('#postfix').bind('textchange',function(event,previousText){
+		            postfix = $(this).val();
+		            drawChart();
+		        });
+	    	});
+
+			function drawChart(){
+				var config = 
+				{
+					size: 300,
+					cur_val: cur_value,
+					max_val: max_value,
+					min_val: min_value,
+					label: inside_text,
+					backColor:backColor,
+					foreColor:foreColor,
+					ValueFontSize:ValueFontSize,
+					MaxValueFontSize:MaxValueFontSize,
+					LabelFontSize:LabelFontSize,
+					prefix:prefix,
+					postfix:postfix
+				}
+				
+				var range = (config.max - config.min).toFixed(2);
+
+				var gauges = new GaugeBorder("chart_div", config);
+				gauges.render();
+			}
+
+	      var app = angular.module('sliderDemoApp', ['ui.slider']);
+
+	      // Currecnt ValueFontSize Function
+          app.factory('a_ValueFontSize', function () {
+            return {
+              refreshValueFontSize: function (val) {
+                 ValueFontSize = val;
+                 drawChart();
+              }
+            };
+          });
+
+	      // Currecnt ValueFontSize Function
+          app.factory('a_MaxValueFontSize', function () {
+            return {
+              refreshMaxValueFontSize: function (val) {
+                 MaxValueFontSize = val;
+                 drawChart();
+              }
+            };
+          });
+
+	      // Currecnt ValueFontSize Function
+          app.factory('a_LabelFontSize', function () {
+            return {
+              refreshLabelFontSize: function (val) {
+                 LabelFontSize = val;
+                 drawChart();
+              }
+            };
+          });
+	      
+	      // Currecnt Value Function
+	      app.factory('a_cur_value', function () {
+	        return {
+	          refreshValue: function (val) {
+	          	console.log(val);
+	             cur_value = val;
+	             drawChart();
+	          }
+	        };
+	      });
+
+	    // Background Color Function
+      	app.factory('a_backColor', function () {
+			function hexFromRGB(r, g, b) {
+				var hex = [r.toString(16), g.toString(16), b.toString(16)];
+				angular.forEach(hex, function(value, key) {
+					if (value.length === 1) hex[key] = "0" + value;
+				});
+				return hex.join('').toUpperCase();
+			}
+			return {
+				refreshbackColor: function (r, g, b) {
+					var color = '#' + hexFromRGB(r, g, b);
+					backColor = color;
+    				drawChart();
+				}
+			};
+		});
+
+	    // Background Color Function
+      	app.factory('a_foreColor', function () {
+			function hexFromRGB(r, g, b) {
+				var hex = [r.toString(16), g.toString(16), b.toString(16)];
+				angular.forEach(hex, function(value, key) {
+					if (value.length === 1) hex[key] = "0" + value;
+				});
+				return hex.join('').toUpperCase();
+			}
+			return {
+				refreshforeColor: function (r, g, b) {
+					var color = '#' + hexFromRGB(r, g, b);
+					foreColor = color;
+    				drawChart();
+				}
+			};
+		});
+
+
+	      // Min - Max Function
+	      app.factory('a_min_max', function () {
+	        return {
+	          refreshMinMax: function (val) {
+	            min_value = val[0];
+	            max_value = val[1];
+       			drawChart();
+	          }
+	        };
+	      });
+	      
+	      app.controller('sliderDemoCtrl', function($scope, $log, a_cur_value, a_ValueFontSize, a_MaxValueFontSize, a_LabelFontSize, a_backColor, a_foreColor, a_min_max) {
+
+
+	        //Refresh Min - Max
+	        function refreshMinMax(ev, ui) {
+	          a_min_max.refreshMinMax($scope.a_min_max.val);
+	        }
+
+	        $scope.a_min_max = {
+	          val:[min_value,max_value],
+	          options:{
+	            orientation: 'horizontal',
+	            range: true,
+	            change: refreshMinMax,
+	            slide: refreshMinMax
+	          }
+	        };
+	        
+	         //Refresh ValueFontSize
+            function refreshValueFontSize(ev, ui) {
+              a_ValueFontSize.refreshValueFontSize($scope.a_ValueFontSize.val);
+            }
+            
+            $scope.a_ValueFontSize =  {
+              val:ValueFontSize,
+              options:{
+                orientation: 'horizontal',
+                range: 'min',
+                change: refreshValueFontSize,
+                slide: refreshValueFontSize
+              }
+            };
+	        
+	         //Refresh MaxValueFontSize
+            function refreshMaxValueFontSize(ev, ui) {
+              a_MaxValueFontSize.refreshMaxValueFontSize($scope.a_MaxValueFontSize.val);
+            }
+            
+            $scope.a_MaxValueFontSize =  {
+              val:MaxValueFontSize,
+              options:{
+                orientation: 'horizontal',
+                range: 'min',
+                change: refreshMaxValueFontSize,
+                slide: refreshMaxValueFontSize
+              }
+            };
+	        
+	         //Refresh LabelFontSize
+            function refreshLabelFontSize(ev, ui) {
+              a_LabelFontSize.refreshLabelFontSize($scope.a_LabelFontSize.val);
+            }
+            
+            $scope.a_LabelFontSize =  {
+              val:LabelFontSize,
+              options:{
+                orientation: 'horizontal',
+                range: 'min',
+                change: refreshLabelFontSize,
+                slide: refreshLabelFontSize
+              }
+            };
+
+	        //Refresh Value
+	        function refreshValue (ev, ui) {
+	          a_cur_value.refreshValue($scope.a_cur_value.val);
+	        }
+	        
+	        $scope.a_cur_value =  {
+	          val:cur_value,
+	          options:{
+	            orientation: 'horizontal',
+	            range: 'min',
+	            change: refreshValue,
+	            slide: refreshValue
+	          }
+	        };
+
+	        //Refresh Max Value
+	        function refreshMaxValue (ev, ui) {
+	          a_max_value.refreshMaxValue($scope.a_max_value.val);
+	        }
+	        
+	        $scope.a_max_value =  {
+	          val:max_value,
+	          options:{
+	            orientation: 'horizontal',
+	            range: 'min',
+	            change: refreshMaxValue,
+	            slide: refreshMaxValue
+	          }
+	        };
+	      	
+	      	//Refresh Background Color
+			function refreshbackColor (ev, ui) {
+				var red = $scope.a_backColor.red,
+					green = $scope.a_backColor.green,
+					blue = $scope.a_backColor.blue;
+				a_backColor.refreshbackColor(red, green, blue);
+			}
+
+			$scope.a_backColor = {
+				red: 230,
+				green: 230,
+				blue: 230,
+				options: {
+					orientation: 'horizontal',
+					min: 0,
+					max: 255,
+					range: 'min',
+					change: refreshbackColor,
+					slide: refreshbackColor
+				}
+			};
+	      	
+	      	//Refresh Foreground Color
+			function refreshforeColor (ev, ui) {
+				var red = $scope.a_foreColor.red,
+					green = $scope.a_foreColor.green,
+					blue = $scope.a_foreColor.blue;
+				a_foreColor.refreshforeColor(red, green, blue);
+			}
+
+			$scope.a_foreColor = {
+				red: 160,
+				green: 215,
+				blue: 113,
+				options: {
+					orientation: 'horizontal',
+					min: 0,
+					max: 255,
+					range: 'min',
+					change: refreshforeColor,
+					slide: refreshforeColor
+				}
+			};
+	        
+	      });
+	    </script> 
+
+	</head>
+	
+	<body ng-controller="sliderDemoCtrl">
+	  	<div id="clock_div" style="position:absolute;top:30;left:30px;">
+	  		<div id="chart_div" style="position: absolute;"></div>
+	        <div style="position:absolute;top:300px;">
+	          <h4>Select Font</h4>
+	          <select class="font_type">
+	              <option class="fontSelect" value="Arial">Arial</option>
+	              <option class="fontSelect" value="Lato">Lato</option>
+	              <option class="fontSelect" value="Montserrat">Montserrat</option>
+	              <option class="fontSelect" value="AbrilFatface">AbrilFatface</option>
+	          </select>
+	        </div>
+	    </div>
+	    <div id="slider_div" style="margin-left: 350px;">
+	      <div class="each_div">
+	        <div class="sliderExample">
+	          <span>ValueFontSize: </span>
+	          <input type="text" ng-model="a_ValueFontSize.val" />  
+	          <div ui-slider="a_ValueFontSize.options" min="20" max="40" ng-model="a_ValueFontSize.val"></div>
+	        </div>
+
+	        <div class="sliderExample">
+	          <span>Min - Max FontSize: </span>
+	          <input type="text" ng-model="a_MaxValueFontSize.val" />  
+	          <div ui-slider="a_MaxValueFontSize.options" min="10" max="20" ng-model="a_MaxValueFontSize.val"></div>
+	        </div>
+
+	        <div class="sliderExample">
+	          <span>LabelFontSize: </span>
+	          <input type="text" ng-model="a_LabelFontSize.val" />  
+	          <div ui-slider="a_LabelFontSize.options" min="20" max="40" ng-model="a_LabelFontSize.val"></div>
+	        </div>
+
+	        <div class="sliderExample">
+	          <span>Value: </span>
+	          <input type="text" ng-model="a_cur_value.val" />  
+	          <div ui-slider="a_cur_value.options" step="0.01" min="0" max="50" use-decimals ng-model="a_cur_value.val"></div>
+	        </div>  
+
+	        <div class="sliderExample">
+	          <span>Min - Max </span>
+	          <div  ui-slider="a_min_max.options" step="0.01" min="0" max="100" step="1" use-decimals lower-bound="0" upper-bound="100" use-decimals ng-model="a_min_max.val">
+	          </div>
+	          <input readonly type="text" ng-model="a_min_max.val" />
+	        </div>
+
+	        <div class="sliderExample">
+	          <strong>Inside Text:</strong>
+	          <input id="inside_text" type="text" ng-model="inside_text" value="Leading Indicator" maxlength="17" />
+	        </div>
+
+	      </div>
+	      <div class="each_div">
+			<div class="sliderExample">
+				<strong>Backgrond Color</strong>
+				<div id="red" ui-slider="a_backColor.options" ng-model="a_backColor.red"></div>
+				Red: <input ng-model="a_backColor.red">
+				<div id="green" ui-slider="a_backColor.options" ng-model="a_backColor.green"></div>
+				Green: <input ng-model="a_backColor.green">
+				<div id="blue" ui-slider="a_backColor.options" ng-model="a_backColor.blue"></div>
+				Blue: <input ng-model="a_backColor.blue">
+			</div>
+			<div class="sliderExample">
+				<strong>Foregrond Color</strong>
+				<div id="red" ui-slider="a_foreColor.options" ng-model="a_foreColor.red"></div>
+				Red: <input ng-model="a_foreColor.red">
+				<div id="green" ui-slider="a_foreColor.options" ng-model="a_foreColor.green"></div>
+				Green: <input ng-model="a_foreColor.green">
+				<div id="blue" ui-slider="a_foreColor.options" ng-model="a_foreColor.blue"></div>
+				Blue: <input ng-model="a_foreColor.blue">
+			</div>
+
+	        <div class="sliderExample">
+	          <strong>Prefix:</strong>
+	          <input id="prefix" type="text" value="K" maxlength="17" />
+	        </div>
+
+	        <div class="sliderExample">
+	          <strong>Postfix:</strong>
+	          <input id="postfix" type="text" value="$" maxlength="17" />
+	        </div>
+	      </div>    
+	    </div>
+	</body>
+	
+</html>
